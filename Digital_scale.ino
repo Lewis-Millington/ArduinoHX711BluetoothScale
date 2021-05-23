@@ -5,7 +5,7 @@ HX711 scale; // scale name
 SoftwareSerial BTserial(7, 6); // RX | TX
 uint8_t dataPin = 3; //bt data pin
 uint8_t clockPin = 2; //bt clock pin
-float w1, w2, previous = 0; 
+float w1, w2 = 0; 
 
 void setup() {
   Serial.begin(9600);
@@ -20,24 +20,21 @@ void loop() {
   w1 = scale.get_units(10);
   delay(50);
   w2 = scale.get_units();
-  while (abs(w1 - w2) > 10){
+  while (abs(w1 - w2) > 5){
      w1 = w2;
      w2 = scale.get_units();
      delay(50);
-  }  
-  //Serial.print("Grams: ");
+  } 
+  //zero weight again if slight drift when tared 
   if (w1 < 0.5 && w1 > -0.5){w1 = 0;}
+  //Send reading over BT
   BTserial.print(w1);
   BTserial.print("\n");
-  if (w1 == 0){Serial.println();}
-  else{
-    previous = w1;
-  }
+  /*if (w1 == 0){Serial.println();}*/
   delay(10);
 
   // Keep reading from HC-06 and send to Arduino Serial Monitor
   while (BTserial.available()){
-    //Serial.write(BTserial.read());
     delay(3);  
     String c = BTserial.readString();
     c.trim();
